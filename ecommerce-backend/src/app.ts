@@ -6,6 +6,7 @@ import express from 'express'
 // importing routes
 import userRoute from "./routes/user.js"
 import { connectDB } from './utils/features.js'
+import { errorMiddleware } from './middlewares/error.js'
 
 const port = 4000
 
@@ -19,6 +20,8 @@ connectDB()
 
 // using routes
 app.use("/api/v1/user",userRoute)
+
+app.use(errorMiddleware)
 
 
 
