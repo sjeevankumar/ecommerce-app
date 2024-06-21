@@ -10,10 +10,23 @@ export const newUser = TryCatch(
     res: Response,
     next: NextFunction
   ) => {
-    throw new Error("some error123")
     const { _id, dob, email, gender, name, photo } = req.body
 
-    const user = await User.create({
+    // check user exist
+    let user = await User.findById(_id)
+    if (user) {
+      return res.status(200).json({
+        success: true,
+        message: `Welcome ${user.name}`,
+      })
+    }
+
+    // check all fields exist
+    if (!_id || !name || !email || !photo || !gender || !dob) {
+      return next(new ErrorHandler('Please add all fields', 400))
+    }
+
+    user = await User.create({
       _id,
       name,
       email,
@@ -25,6 +38,49 @@ export const newUser = TryCatch(
     return res.status(201).json({
       success: true,
       message: `Welcome, ${user.name}`,
+    })
+  }
+)
+
+export const getAllUsers = TryCatch(async (req, res, next) => {
+  const users = await User.find({})
+
+  return res.status(200).json({
+    success: true,
+    users,
+  })
+})
+
+export const getUser = TryCatch(async (req, res, next) => {
+  const { id } = req.params
+
+  //check user exist
+  const user = await User.findById(id)
+  console.log(user)
+  if (!user) return next(new ErrorHandler('Invalid Id', 400))
+
+  return res.status(200).json({
+    success: true,
+    user,
+  })
+})
+
+export const deleteUser = TryCatch(
+  async(req,res,next)=>{
+    // get id from the params
+    const {id}= req.params
+
+    // check user exist
+    const user = await User.findById(id)
+    if(!user) return next(new ErrorHandler("Invalid Id",400))
+
+    // if exist delete user
+    await user.deleteOne()
+
+    // return response
+    return res.status(204).json({
+      success:true,
+      message:"user deleted successfully"
     })
   }
 )
