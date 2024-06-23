@@ -9,7 +9,7 @@ import { Product } from '../models/product.js'
 import ErrorHandler from '../utils/utility-class.js'
 import { rm } from 'fs'
 import { myCache } from '../app.js'
-import { invalidateCahce } from '../utils/features.js'
+import { invalidateCache } from '../utils/features.js'
 // import { faker } from '@faker-js/faker'
 
 //Revalidate cache on new,update,delete product and on new order
@@ -93,7 +93,7 @@ export const newProduct = TryCatch(
       return next(new ErrorHandler('Please enter all fields', 400))
     }
 
-    await Product.create({
+    const product = await Product.create({
       name,
       price,
       category: category.toLowerCase(),
@@ -101,7 +101,7 @@ export const newProduct = TryCatch(
       photo: photo?.path,
     })
 
-    await invalidateCahce({ product: true })
+    await invalidateCache({ product: true, productId: String(product._id) })
 
     return res.status(201).json({
       success: true,
@@ -134,10 +134,10 @@ export const updateProduct = TryCatch(async (req, res, next) => {
   if (category) product.category = category
   console.log('before', product)
 
-  //sace the updated product
+  //save the updated product
   product = await product.save()
 
-  await invalidateCahce({ product: true })
+  await invalidateCache({ product: true, productId: String(product._id) })
 
   return res.status(200).json({
     success: true,
@@ -158,7 +158,7 @@ export const deleteProduct = TryCatch(async (req, res, next) => {
 
   await product.deleteOne()
 
-  await invalidateCahce({ product: true })
+  await invalidateCache({ product: true, productId: String(product._id) })
 
   return res.status(204).json({
     success: true,

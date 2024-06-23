@@ -11,21 +11,23 @@ export const errorMiddleware = (
   err.message ||= 'Internal Server Error'
   err.statusCode ||= 500
 
+  if (err.name === 'CastError') {
+    err.statusCode = 400
+    err.message = 'Invalid ID'
+  }
+
   return res.status(err.statusCode).json({
     success: false,
     message: err.message,
   })
 }
 
-export const TryCatch = (func:ControllerType)=>{
-  return async(req: Request, res: Response, next: NextFunction) => {
+export const TryCatch = (func: ControllerType) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await func(req,res,next)
+      await func(req, res, next)
     } catch (error) {
       next(error)
     }
   }
 }
-
-
-
